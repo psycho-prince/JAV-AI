@@ -1,0 +1,24 @@
+{
+  "name": "Web",
+  "description": "Standard HTTP web applications and web servers security",
+  "attack_surface": "Public web ports (80, 443, 8080), HTTP headers, TLS configurations, and client-side resources",
+  "common_misconfigurations": [
+    "Debug or development mode left active in production",
+    "Missing security headers (CSP, HSTS, X-Frame-Options, X-Content-Type)",
+    "Directory listing enabled on upload or static asset servers"
+  ],
+  "validation_methods": [
+    "Passive request/response header inspection",
+    "Directory and file fuzzed endpoints checks",
+    "Source code or JavaScript asset map review"
+  ],
+  "evidence_requirements": [
+    "Full HTTP Request and Response headers sequence",
+    "Visual screenshot of debug outputs or listed directory files"
+  ],
+  "false_positive_indicators": [
+    "WAF returning fake block page response codes",
+    "Simulated dev server routes mimicking debug panels"
+  ],
+  "reporting_guidance": "Flag CSP/CORS/HSTS issues only when paired with a working proof-of-concept showing cross-origin read or clickjacking exploitation."
+}

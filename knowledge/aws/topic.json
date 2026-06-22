@@ -1,0 +1,22 @@
+{
+  "name": "AWS",
+  "description": "Amazon Web Services cloud settings",
+  "attack_surface": "EC2 metadata, IAM instance profiles, public S3 buckets, Lambda function policies",
+  "common_misconfigurations": [
+    "AWS API access key exposure",
+    "Missing source IP constraints on security groups",
+    "Over-permissive S3 bucket ACLs"
+  ],
+  "validation_methods": [
+    "Test credentials using aws sts get-caller-identity",
+    "Check bucket access using aws s3 ls"
+  ],
+  "evidence_requirements": [
+    "Raw terminal output showing caller identity or listing success"
+  ],
+  "false_positive_indicators": [
+    "Invalid or disabled credentials in log traces",
+    "Buckets that are readable but contain no sensitive user files"
+  ],
+  "reporting_guidance": "Focus on data exposure or credential leaks leading to execution privileges."
+}

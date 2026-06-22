@@ -1,0 +1,10 @@
+{
+  "name": "Kubernetes",
+  "steps": [
+    "Audit API Server Configuration",
+    "Inspect Kubelet Security settings",
+    "Analyze Service Account Tokens permissions",
+    "Scan Network Policies defaults",
+    "Verify Pod Security Standards enforcement"
+  ]
+}

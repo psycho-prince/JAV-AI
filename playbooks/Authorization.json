@@ -1,0 +1,11 @@
+{
+  "name": "Authorization",
+  "steps": [
+    "Map Roles",
+    "Compare Permissions",
+    "Verify Resource Isolation",
+    "Test Object Access Controls",
+    "Validate Tenant Boundaries",
+    "Document Evidence"
+  ]
+}

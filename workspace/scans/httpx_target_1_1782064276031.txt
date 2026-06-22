@@ -1,0 +1,2 @@
+Httpx completed with error exit code 1:
+UnsupportedProtocol: Request URL is missing an 'http://' or 'https://' protocol.

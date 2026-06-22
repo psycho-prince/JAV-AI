@@ -1,0 +1,10 @@
+{
+  "name": "Cloud",
+  "steps": [
+    "Identify Cloud Provider",
+    "Scan Public IP Ranges",
+    "Audit Exposed Services",
+    "Verify Metadata Service Access",
+    "Inspect Domain DNS Settings"
+  ]
+}

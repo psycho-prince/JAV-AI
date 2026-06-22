@@ -1,0 +1,10 @@
+{
+  "name": "IAM",
+  "steps": [
+    "Enumerate Roles and Users",
+    "Identify Policies and Permissions",
+    "Test Privilege Escalation Vectors",
+    "Analyze Token and Key Lifetimes",
+    "Validate Cross-Tenant Access Controls"
+  ]
+}

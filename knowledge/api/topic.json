@@ -1,0 +1,24 @@
+{
+  "name": "API",
+  "description": "Application Programming Interface endpoints",
+  "attack_surface": "REST, SOAP endpoints, parameter payloads, HTTP verbs, auth headers",
+  "common_misconfigurations": [
+    "Unauthenticated debug routes",
+    "Missing parameter validation",
+    "BOLA (Broken Object Level Authorization)"
+  ],
+  "validation_methods": [
+    "ID parameter fuzzing",
+    "HTTP verb tampering",
+    "Header omission tests"
+  ],
+  "evidence_requirements": [
+    "HTTP raw request and response trace",
+    "PoC curl commands"
+  ],
+  "false_positive_indicators": [
+    "Faked 200 responses with error text in body",
+    "Endpoints restricted by IP rate limiting during active test"
+  ],
+  "reporting_guidance": "Demonstrate BOLA or info leak impact clearly. Simple route discovery without data leakage is low priority."
+}

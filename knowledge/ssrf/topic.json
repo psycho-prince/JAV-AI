@@ -1,0 +1,24 @@
+{
+  "name": "SSRF",
+  "description": "Server-Side Request Forgery",
+  "attack_surface": "Webhook endpoints, PDF generators, image import URLs, file upload forms accepting URLs",
+  "common_misconfigurations": [
+    "Lack of network-level separation on internal resources",
+    "Missing protocol constraints (e.g. allowing file://, gopher://)",
+    "Failing to validate DNS resolution output (DNS rebinding vulnerability)"
+  ],
+  "validation_methods": [
+    "Inject metadata IPs (e.g., 169.254.169.254)",
+    "Inject localhost port ranges",
+    "Use out-of-band monitoring tools (e.g., DNS/HTTP interactors)"
+  ],
+  "evidence_requirements": [
+    "Screenshot/logs of internal resource file/metadata readout",
+    "Timestamped out-of-band interactor hit logs matching injected request ID"
+  ],
+  "false_positive_indicators": [
+    "WAF blocking external resource reads and returning generic HTML errors",
+    "DNS resolution success on public servers without backend HTTP processing"
+  ],
+  "reporting_guidance": "High priority focus area. SSRF with internal metadata or private files readout represents a critical risk."
+}

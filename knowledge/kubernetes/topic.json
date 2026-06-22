@@ -1,0 +1,23 @@
+{
+  "name": "Kubernetes",
+  "description": "Container orchestration cluster configurations",
+  "attack_surface": "Kubelet API, Kube-apiserver endpoints, service account tokens inside pods",
+  "common_misconfigurations": [
+    "Anonymous access enabled on Kubelet ports",
+    "Over-privileged service account policies (e.g. cluster-admin role mapping)",
+    "Missing container runtime execution limits (e.g. hostNetwork or privileged containers)"
+  ],
+  "validation_methods": [
+    "Attempt anonymous listing on Kubelet API paths",
+    "Check token permissions using kubectl auth can-i options"
+  ],
+  "evidence_requirements": [
+    "Raw API response showing pod listings or shell execution output",
+    "Kubectl trace logs showing allowed admin commands"
+  ],
+  "false_positive_indicators": [
+    "Apiserver endpoints returning unauthorized errors after initial handshake",
+    "Read-only mock cluster endpoints"
+  ],
+  "reporting_guidance": "High priority focus area. Remote code execution inside containers or escape to node is critical risk."
+}

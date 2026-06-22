@@ -1,0 +1,15 @@
+{
+  "title": "Security Assessment Report for default",
+  "project": "default",
+  "timestamp": "1782064299235",
+  "targets": ["example.com"],
+  "assets_count": 8,
+  "findings": [
+    {
+      "id": 4,
+      "title": "Missing CSP",
+      "severity": "High",
+      "description": "Content Security Policy header not present"
+    }
+  ]
+}

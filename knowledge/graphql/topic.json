@@ -1,0 +1,23 @@
+{
+  "name": "GraphQL",
+  "description": "GraphQL API interface vulnerabilities",
+  "attack_surface": "GraphQL query paths, schema introspection queries, mutation definitions",
+  "common_misconfigurations": [
+    "Introspection schema query enabled in production",
+    "Missing rate limits on nested object depth (DoS vulnerability)",
+    "Unauthenticated mutations exposing account status modifications"
+  ],
+  "validation_methods": [
+    "Run introspection queries to extract complete GraphQL schema",
+    "Test batch queries to evaluate resource exhaust bounds"
+  ],
+  "evidence_requirements": [
+    "Dump of introspection payload output",
+    "Raw HTTP mutation request / response showing unauthorized modifications"
+  ],
+  "false_positive_indicators": [
+    "Generic error blocks returned with mock data keys",
+    "WAF blocking nested structures on the frontend"
+  ],
+  "reporting_guidance": "Privilege escalation mutations are critical focus areas; introspection is low value without sensitive database field leakage."
+}

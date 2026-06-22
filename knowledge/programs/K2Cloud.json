@@ -1,0 +1,30 @@
+{
+  "name": "K2 Cloud",
+  "type": "Cloud Provider",
+  "max_bounty": 500000,
+  "focus": [
+    "RCE",
+    "SSRF",
+    "IDOR",
+    "Privilege Escalation",
+    "SQL Injection",
+    "Authentication"
+  ],
+  "low_value": [
+    "Missing CSP",
+    "Missing Headers",
+    "Open Ports",
+    "Version Disclosure"
+  ],
+  "forbidden": [
+    "DoS",
+    "Brute Force",
+    "Customer Infrastructure",
+    "Social Engineering"
+  ],
+  "exclusions": [
+    "CSRF on logout",
+    "Rate limiting without impact",
+    "SSL/TLS best practices"
+  ]
+}

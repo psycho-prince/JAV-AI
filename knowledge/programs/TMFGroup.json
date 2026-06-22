@@ -1,0 +1,31 @@
+{
+  "name": "TMF Group",
+  "type": "Financial Services",
+  "max_bounty": 250000,
+  "focus": [
+    "RCE",
+    "SQL Injection",
+    "IDOR",
+    "Authentication Bypass",
+    "Privilege Escalation",
+    "Information Disclosure"
+  ],
+  "low_value": [
+    "Missing CSP",
+    "Missing Security Headers",
+    "TLS Configuration",
+    "DNSSEC",
+    "Version Disclosure"
+  ],
+  "forbidden": [
+    "DoS",
+    "Brute Force",
+    "Social Engineering",
+    "Physical Security"
+  ],
+  "exclusions": [
+    "Self-XSS",
+    "Missing rate limiting",
+    "Clickjacking on non-sensitive pages"
+  ]
+}

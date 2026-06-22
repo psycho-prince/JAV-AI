@@ -1,0 +1,11 @@
+{
+  "name": "Authentication",
+  "steps": [
+    "Identify Authentication Mechanisms",
+    "Test Password Policy / Brute Force Limits",
+    "Verify Multi-Factor Authentication",
+    "Inspect Session Token Generation",
+    "Validate OAuth Callback Verification",
+    "Test JWT Signatures and Headers"
+  ]
+}

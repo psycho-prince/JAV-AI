@@ -1,0 +1,23 @@
+{
+  "name": "IAM",
+  "description": "Cloud and identity management service configurations and controls",
+  "attack_surface": "User roles, access credentials, authentication API routes, and trust relationship policies",
+  "common_misconfigurations": [
+    "Over-permissive permissions assigned to service roles",
+    "Missing cross-tenant permission constraints in trust definitions",
+    "Inactive users holding API keys with full administration rights"
+  ],
+  "validation_methods": [
+    "Verify capability to request resources from non-owned tenant identifier",
+    "Check policy document configuration via IAM query API endpoints"
+  ],
+  "evidence_requirements": [
+    "HTTP trace showing unauthorized access to administration APIs",
+    "Dump of policy documents confirming missing constraints"
+  ],
+  "false_positive_indicators": [
+    "System API returning success code but returning empty or mocked datasets",
+    "Permissive policies restricted by downstream environment condition keys"
+  ],
+  "reporting_guidance": "Focus on privilege escalation and cross-tenant access. Exclude version disclosures or simple key presence without administrative usage."
+}

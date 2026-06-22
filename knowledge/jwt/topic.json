@@ -1,0 +1,23 @@
+{
+  "name": "JWT",
+  "description": "JSON Web Token configurations and validations",
+  "attack_surface": "Authorization HTTP headers, token header algorithms, payload parameters",
+  "common_misconfigurations": [
+    "Accepting tokens signed with 'none' algorithm header options",
+    "Missing signature verification checks on backend API routes",
+    "Weak signing keys susceptible to offline brute force cracking attempts"
+  ],
+  "validation_methods": [
+    "Modify algorithm parameter to 'none' and test backend acceptance",
+    "Brute force signature key locally using offline key crack programs"
+  ],
+  "evidence_requirements": [
+    "Trace showing success responses for algorithm-less tokens with modified user sub keys",
+    "Cracked signing secret key matching client JWT configurations"
+  ],
+  "false_positive_indicators": [
+    "Backend rejecting modified payloads despite returning success code on parsing stage",
+    "WAF blocking token structure changes on the network gateway"
+  ],
+  "reporting_guidance": "High priority focus area. Token validation bypasses resulting in profile access are critical severity."
+}

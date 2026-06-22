@@ -1,0 +1,10 @@
+{
+  "name": "S3",
+  "steps": [
+    "Audit Public Bucket Access",
+    "Inspect Bucket ACLs and Policies",
+    "Test Object Listing Anonymously",
+    "Verify Write/Upload Restrictions",
+    "Check Object ACL Overrides"
+  ]
+}

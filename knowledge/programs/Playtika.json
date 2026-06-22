@@ -1,0 +1,29 @@
+{
+  "name": "Playtika",
+  "type": "Gaming Provider",
+  "max_bounty": 10000,
+  "focus": [
+    "IDOR on Game State",
+    "In-game Currency Theft",
+    "SQL Injection",
+    "RCE",
+    "Authentication Bypass"
+  ],
+  "low_value": [
+    "Missing CSP",
+    "Missing Headers",
+    "Version Disclosure",
+    "Open Redirect"
+  ],
+  "forbidden": [
+    "DoS",
+    "DDoS",
+    "Brute Force",
+    "Phishing"
+  ],
+  "exclusions": [
+    "Missing Rate Limiting",
+    "Tabnabbing",
+    "Missing Cookie Flags"
+  ]
+}

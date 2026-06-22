@@ -1,0 +1,29 @@
+{
+  "name": "NASA",
+  "type": "Government / Aerospace",
+  "max_bounty": 0,
+  "focus": [
+    "Exposed API Keys",
+    "Subdomain Takeover",
+    "SSRF",
+    "Information Disclosure",
+    "XML External Entity (XXE)"
+  ],
+  "low_value": [
+    "Missing CSP",
+    "TLS Best Practices",
+    "Banner Grabbing",
+    "Outdated Software without CVE"
+  ],
+  "forbidden": [
+    "Active Exploitation beyond PoC",
+    "DoS",
+    "Social Engineering",
+    "Brute Force"
+  ],
+  "exclusions": [
+    "Rate limiting",
+    "Unauthenticated email spoofing",
+    "Lack of SPF/DKIM"
+  ]
+}

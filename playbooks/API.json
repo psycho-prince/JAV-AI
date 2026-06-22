@@ -1,0 +1,11 @@
+{
+  "name": "API",
+  "steps": [
+    "Discover Endpoints",
+    "Inspect Parameter Schemas",
+    "Test Authentication Headers",
+    "Check HTTP Verb Tampering",
+    "Test BOLA / IDOR",
+    "Examine Rate Limiting"
+  ]
+}

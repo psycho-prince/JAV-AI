@@ -1,0 +1,23 @@
+{
+  "name": "Cloud",
+  "description": "Public cloud platform configurations",
+  "attack_surface": "Instance metadata endpoints, API credentials, identity trust policy files, storage bucket ACLs",
+  "common_misconfigurations": [
+    "Exposed instance access keys in client-side code repositories",
+    "Open storage bucket access permissions",
+    "Over-privileged compute instance roles"
+  ],
+  "validation_methods": [
+    "Test credential permissions using cloud administration CLI tools",
+    "Inspect metadata service configurations via local container requests"
+  ],
+  "evidence_requirements": [
+    "Shell trace of CLI credential check commands output",
+    "Raw response from instance metadata readout request"
+  ],
+  "false_positive_indicators": [
+    "Mocked credentials in example code that do not correspond to real accounts",
+    "IP restricted metadata service integrations"
+  ],
+  "reporting_guidance": "High priority focus area. Cross-tenant access or write access to cloud resources represents a critical vulnerability."
+}

@@ -1,0 +1,23 @@
+{
+  "name": "S3",
+  "description": "Simple Storage Service and object storage",
+  "attack_surface": "Bucket listings, upload files endpoints, access control policies",
+  "common_misconfigurations": [
+    "S3 bucket read access granted to anonymous users",
+    "Over-permissive upload rules allowing arbitrary HTML/script execution",
+    "Missing bucket logging or security policy rules"
+  ],
+  "validation_methods": [
+    "Check directory layout anonymously in browser",
+    "Attempt uploads of sample test files using aws-cli tool"
+  ],
+  "evidence_requirements": [
+    "HTTP response showing listing of XML content from bucket URL",
+    "Success code trace from bucket upload test command"
+  ],
+  "false_positive_indicators": [
+    "Access denied returned on all metadata files",
+    "Buckets that only allow public upload to sandbox folders without read execution"
+  ],
+  "reporting_guidance": "Focus on read/write exposure of sensitive files. Bucket policy warnings without listing access are low value."
+}

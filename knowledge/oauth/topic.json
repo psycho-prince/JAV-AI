@@ -1,0 +1,23 @@
+{
+  "name": "OAuth",
+  "description": "OAuth 2.0 authorization frameworks configuration",
+  "attack_surface": "Authorization redirect URLs, client secrets, state parameters, authorization codes, access tokens",
+  "common_misconfigurations": [
+    "Lack of validation on redirect_uri allowing open redirect to external hosts",
+    "Missing state parameter resulting in CSRF vulnerabilities on authentication",
+    "Leakage of client secrets in client-side script code definitions"
+  ],
+  "validation_methods": [
+    "Test state parameter omission during authentication flow",
+    "Tamper redirect_uri parameter to target external listener domains"
+  ],
+  "evidence_requirements": [
+    "Raw HTTP requests tracking redirect behavior to external address",
+    "Session trace proving successful takeover using CSRF link click"
+  ],
+  "false_positive_indicators": [
+    "System rejecting tampered parameters on subsequent API authorization code requests",
+    "Redirect URLs matching predefined whitelist values only"
+  ],
+  "reporting_guidance": "High priority focus area. Redirect validation flaws leading to account takeover are critical severity."
+}

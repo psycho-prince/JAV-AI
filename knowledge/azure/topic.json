@@ -1,0 +1,23 @@
+{
+  "name": "Azure",
+  "description": "Microsoft Azure cloud services configurations",
+  "attack_surface": "Azure portal login, tenant configurations, key vault access rights, storage accounts ACL",
+  "common_misconfigurations": [
+    "Exposed client secrets or certificates",
+    "Azure Blob Storage set to public read access",
+    "Missing Multi-Factor Authentication on tenant administrators"
+  ],
+  "validation_methods": [
+    "Attempt reading from blob storage URLs anonymously",
+    "Check access privileges on key vaults using Azure CLI options"
+  ],
+  "evidence_requirements": [
+    "HTTP capture showing successful anonymous download of blobs",
+    "Error logs from vault read containing secret metadata keys"
+  ],
+  "false_positive_indicators": [
+    "Expired secrets or keys that are disabled",
+    "Blob storage URLs returning HTTP 403 blocks"
+  ],
+  "reporting_guidance": "Blob storage exposure containing personal details is critical focus; TLS issues are low value."
+}

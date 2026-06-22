@@ -1,0 +1,23 @@
+{
+  "name": "IDOR",
+  "description": "Insecure Direct Object Reference",
+  "attack_surface": "Resource identifier parameters in URL paths, query parameters, or JSON payloads",
+  "common_misconfigurations": [
+    "Using sequential integers for object IDs without authentication lookup",
+    "Relying solely on frontend UI hiding of element links to restrict access",
+    "Missing cross-tenant checking constraints in relational database queries"
+  ],
+  "validation_methods": [
+    "Test endpoint access with separate account authorization token",
+    "Omit auth headers or exchange with guest roles"
+  ],
+  "evidence_requirements": [
+    "Raw HTTP Request/Response headers with tampered ID showing non-owned data retrieval",
+    "Evidence of cross-tenant modifications or delete operations"
+  ],
+  "false_positive_indicators": [
+    "Mocked endpoints returning similar empty profile template fields for all request IDs",
+    "WAF blocking requests based on header mismatch policies"
+  ],
+  "reporting_guidance": "High priority focus area. Cross-tenant read/write must be clearly demonstrated with two distinct account credentials."
+}

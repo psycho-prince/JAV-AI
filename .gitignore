@@ -1,0 +1,15 @@
+target/
+*.class
+*.log
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+.vscode/
+*.db
+*.db-journal
+/database/javai.db
+/memory/cache/
+/memory/embeddings/
+/workspace/temp/

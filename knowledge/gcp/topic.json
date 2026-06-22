@@ -1,0 +1,22 @@
+{
+  "name": "GCP",
+  "description": "Google Cloud Platform configurations",
+  "attack_surface": "Cloud Storage buckets, Service Account key files, metadata endpoints, Compute Engine firewall rules",
+  "common_misconfigurations": [
+    "Exposed Service Account JSON key files",
+    "Publicly accessible Cloud Storage buckets (allUsers permissions)",
+    "Unrestricted compute metadata endpoints"
+  ],
+  "validation_methods": [
+    "Test credentials using gcloud auth activate-service-account",
+    "List storage files using gsutil ls"
+  ],
+  "evidence_requirements": [
+    "Raw logs showing project billing or instance lists access"
+  ],
+  "false_positive_indicators": [
+    "Disabled service accounts that cannot authenticate",
+    "Storage buckets returning Access Denied errors"
+  ],
+  "reporting_guidance": "High priority focus area. Exposed service account keys with Editor or Owner roles are critical."
+}
