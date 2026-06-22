@@ -150,6 +150,15 @@ public class ConsoleUI {
                 case "/snapshot":
                     handleSnapshotCommand(arg);
                     break;
+                case "/council":
+                    handleCouncilCommand(arg);
+                    break;
+                case "/quantum":
+                    handleQuantumCommand(arg);
+                    break;
+                case "/coder":
+                    handleCoderCommand(arg);
+                    break;
                 case "/subfinder":
                 case "/httpx":
                 case "/nmap":
@@ -795,6 +804,12 @@ public class ConsoleUI {
         System.out.println("  /snapshot create [name] Create a database and knowledge snapshot.");
         System.out.println("  /snapshot restore [name]Restore database from snapshot.");
         System.out.println("  /snapshot list          List available snapshots.");
+        System.out.println("  /council debate [id]    Run a multi-agent debate to validate a finding's severity.");
+        System.out.println("  /quantum keygen [pfx]   Generate a pair of ML-KEM/ML-DSA PQC keys.");
+        System.out.println("  /quantum seal [file]    Encrypt and sign a file using post-quantum cryptography.");
+        System.out.println("  /quantum unseal [f] [p] [s] Decrypt and verify a sealed PQC file.");
+        System.out.println("  /coder solve [desc]     Use AI model router to solve coding problems.");
+        System.out.println("  /coder audit [file]     Audit code for quantum vulnerabilities and PQC readiness.");
         System.out.println("  /exit                   Close the console interface.");
     }
 
@@ -1838,6 +1853,112 @@ public class ConsoleUI {
             }
         } catch (Exception e) {
             System.out.println("[Error] Snapshot action failed: " + e.getMessage());
+        }
+    }
+
+    private void handleCouncilCommand(String arg) {
+        String[] parts = arg.trim().split(" ", 2);
+        String subcmd = parts[0].toLowerCase();
+        String subarg = parts.length > 1 ? parts[1].trim() : "";
+
+        if (subcmd.equals("debate")) {
+            if (subarg.isEmpty()) {
+                System.out.println("[System] Please specify a finding ID to debate. E.g. `/council debate <finding_id>`");
+                return;
+            }
+            try {
+                int findingId = Integer.parseInt(subarg);
+                com.javai.security.skeptic.CouncilEngine council = new com.javai.security.skeptic.CouncilEngine(
+                        javAI.getDatabaseManager(),
+                        javAI.getModelRouter(),
+                        javAI.getMemoryEngine()
+                );
+                council.holdDebate(findingId);
+            } catch (NumberFormatException e) {
+                System.out.println("[System] Invalid finding ID format: " + subarg);
+            } catch (Exception e) {
+                System.out.println("[Error] Council debate failed: " + e.getMessage());
+            }
+        } else {
+            System.out.println("[System] Unknown council subcommand. Use `/council debate <finding_id>`");
+        }
+    }
+
+    private void handleQuantumCommand(String arg) {
+        String[] parts = arg.trim().split(" ", 2);
+        String subcmd = parts[0].toLowerCase();
+        String subarg = parts.length > 1 ? parts[1].trim() : "";
+
+        com.javai.security.pqc.QuantumBlueEngine pqc = new com.javai.security.pqc.QuantumBlueEngine();
+
+        try {
+            if (subcmd.equals("keygen")) {
+                String prefix = subarg.isEmpty() ? "pqc_user" : subarg;
+                pqc.generateKeyPair(prefix);
+            } else if (subcmd.equals("seal")) {
+                if (subarg.isEmpty()) {
+                    System.out.println("[System] Usage: `/quantum seal <file_path>`");
+                    return;
+                }
+                String idSk = "workspace/keys/pqc_user_id.sk";
+                String pqcPk = "workspace/keys/pqc_user_pqc.pk";
+                if (!new java.io.File(idSk).exists() || !new java.io.File(pqcPk).exists()) {
+                    System.out.println("[System] Keys not found. Generating default key pair first...");
+                    pqc.generateKeyPair("pqc_user");
+                }
+                pqc.sealFile(subarg, idSk, pqcPk);
+            } else if (subcmd.equals("unseal")) {
+                if (subarg.isEmpty()) {
+                    System.out.println("[System] Usage: `/quantum unseal <file_path.pqc>` or `/quantum unseal <file_path.pqc> <id.pk> <pqc.sk>`");
+                    return;
+                }
+                String[] unsealParts = subarg.split("\\s+");
+                String pqcFile = unsealParts[0];
+                String idPk = unsealParts.length > 1 ? unsealParts[1] : "workspace/keys/pqc_user_id.pk";
+                String pqcSk = unsealParts.length > 2 ? unsealParts[2] : "workspace/keys/pqc_user_pqc.sk";
+
+                if (!new java.io.File(idPk).exists() || !new java.io.File(pqcSk).exists()) {
+                    System.out.println("[Error] Post-quantum public/private keys not found. Run `/quantum keygen` first.");
+                    return;
+                }
+                pqc.unsealFile(pqcFile, idPk, pqcSk);
+            } else {
+                System.out.println("[System] Unknown quantum subcommand. Use: `/quantum keygen`, `/quantum seal <file>`, or `/quantum unseal <file>`");
+            }
+        } catch (Exception e) {
+            System.out.println("[Error] Quantum operation failed: " + e.getMessage());
+        }
+    }
+
+    private void handleCoderCommand(String arg) {
+        String[] parts = arg.trim().split(" ", 2);
+        String subcmd = parts[0].toLowerCase();
+        String subarg = parts.length > 1 ? parts[1].trim() : "";
+
+        com.javai.security.coder.CoderEngine coder = new com.javai.security.coder.CoderEngine(
+                javAI.getDatabaseManager(),
+                javAI.getModelRouter(),
+                javAI.getMemoryEngine()
+        );
+
+        try {
+            if (subcmd.equals("solve")) {
+                if (subarg.isEmpty()) {
+                    System.out.println("[System] Usage: `/coder solve <description of problem>`");
+                    return;
+                }
+                coder.solveProblem(subarg);
+            } else if (subcmd.equals("audit")) {
+                if (subarg.isEmpty()) {
+                    System.out.println("[System] Usage: `/coder audit <file_path>`");
+                    return;
+                }
+                coder.auditPqcReadiness(subarg);
+            } else {
+                System.out.println("[System] Unknown coder subcommand. Use: `/coder solve <problem>` or `/coder audit <file>`");
+            }
+        } catch (Exception e) {
+            System.out.println("[Error] Coder operation failed: " + e.getMessage());
         }
     }
 }

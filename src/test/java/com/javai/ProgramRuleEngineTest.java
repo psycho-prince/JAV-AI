@@ -149,4 +149,101 @@ public class ProgramRuleEngineTest {
         assertEquals(0.95, report3.getConfidence());
         assertEquals(2, report3.getEvidenceCount());
     }
+
+    @Test
+    public void testCouncilEngine() throws Exception {
+        // Create a new finding without evidence
+        int findingId = memoryEngine.addFinding("CSRF on delete account", "Medium", "Potential cross-site request forgery.");
+        assertNotEquals(-1, findingId);
+
+        // Define a test model config and model router
+        com.javai.llm.LocalModelConfig modelConfig = new com.javai.llm.LocalModelConfig();
+        com.javai.llm.ModelRouter router = new com.javai.llm.ModelRouter(modelConfig);
+        router.initialize();
+
+        // Register custom provider that outputs standard Moderator decisions
+        router.registerProvider("test-provider", new com.javai.llm.LLMProvider() {
+            @Override
+            public void initialize() throws Exception {}
+
+            @Override
+            public com.javai.llm.LLMResponse complete(com.javai.llm.LLMRequest request) throws Exception {
+                String prompt = request.getMessages().get(0).getContent();
+                if (prompt.contains("neutral security referee")) {
+                    return new com.javai.llm.LLMResponse("SEVERITY: High\nCONFIDENCE: 85%\nRATIONALE: Validated via council.");
+                } else if (prompt.contains("professional penetration tester")) {
+                    return new com.javai.llm.LLMResponse("Exploiter: escalation is easy.");
+                } else {
+                    return new com.javai.llm.LLMResponse("Skeptic: proof is missing.");
+                }
+            }
+        });
+        router.setActiveModel("test-provider");
+
+        com.javai.security.skeptic.CouncilEngine council = new com.javai.security.skeptic.CouncilEngine(dbManager, router, memoryEngine);
+        council.holdDebate(findingId);
+
+        // Verify the finding was updated to VALIDATED state and High severity with 85% confidence
+        String sql = "SELECT state, confidence, severity FROM findings WHERE id = ?";
+        try (java.sql.Connection conn = dbManager.getConnection();
+             java.sql.PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setInt(1, findingId);
+            try (java.sql.ResultSet rs = stmt.executeQuery()) {
+                assertTrue(rs.next());
+                assertEquals("VALIDATED", rs.getString("state"));
+                assertEquals(0.85, rs.getDouble("confidence"), 0.001);
+                assertEquals("High", rs.getString("severity"));
+            }
+        }
+    }
+
+    @Test
+    public void testPqcAndCoder() throws Exception {
+        // 1. Verify PQC Keygen, Seal, and Unseal
+        com.javai.security.pqc.QuantumBlueEngine pqc = new com.javai.security.pqc.QuantumBlueEngine();
+        pqc.generateKeyPair("test_pfx");
+
+        java.io.File idPkFile = new java.io.File("workspace/keys/test_pfx_id.pk");
+        java.io.File idSkFile = new java.io.File("workspace/keys/test_pfx_id.sk");
+        java.io.File pqcPkFile = new java.io.File("workspace/keys/test_pfx_pqc.pk");
+        java.io.File pqcSkFile = new java.io.File("workspace/keys/test_pfx_pqc.sk");
+
+        assertTrue(idPkFile.exists());
+        assertTrue(idSkFile.exists());
+        assertTrue(pqcPkFile.exists());
+        assertTrue(pqcSkFile.exists());
+
+        // Create a test file
+        java.io.File testFile = new java.io.File("workspace/keys/test_data.txt");
+        java.nio.file.Files.writeString(testFile.toPath(), "Classical cryptography is broken by quantum computers.", java.nio.charset.StandardCharsets.UTF_8);
+
+        // Seal it
+        pqc.sealFile(testFile.getPath(), idSkFile.getPath(), pqcPkFile.getPath());
+        java.io.File sealedFile = new java.io.File("workspace/keys/test_data.txt.pqc");
+        assertTrue(sealedFile.exists());
+
+        // Unseal it
+        pqc.unsealFile(sealedFile.getPath(), idPkFile.getPath(), pqcSkFile.getPath());
+        java.io.File recoveredFile = new java.io.File("workspace/keys/test_data.txt.recovered");
+        assertTrue(recoveredFile.exists());
+        assertEquals("Classical cryptography is broken by quantum computers.", java.nio.file.Files.readString(recoveredFile.toPath()));
+
+        // Clean up PQC test files
+        testFile.delete();
+        sealedFile.delete();
+        recoveredFile.delete();
+        idPkFile.delete();
+        idSkFile.delete();
+        pqcPkFile.delete();
+        pqcSkFile.delete();
+
+        // 2. Verify Coder audit PQC readiness
+        java.io.File vulnFile = new java.io.File("workspace/keys/VulnerableContract.sol");
+        java.nio.file.Files.writeString(vulnFile.toPath(), "contract V { function f() { ecrecover(h,v,r,s); } }");
+        
+        com.javai.security.coder.CoderEngine coder = new com.javai.security.coder.CoderEngine(dbManager, null, memoryEngine);
+        coder.auditPqcReadiness(vulnFile.getPath());
+        
+        vulnFile.delete();
+    }
 }

@@ -13,3 +13,49 @@
 [05:51:58] [Decision: Finding Transition] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' state transitioned from HYPOTHESIS to PARTIAL_EVIDENCE (Confidence: 50%, Evidence Count: 1)
 [05:51:58] [Decision: Evidence Accepted] [Finding ID: 1] Evidence 'HTTP Response Trace' (content length: 67 characters) was accepted and attached to finding ID 1
 [05:51:58] [Decision: Finding Transition] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' state transitioned from PARTIAL_EVIDENCE to VALIDATED (Confidence: 95%, Evidence Count: 2)
+[06:08:30] [Decision: Council Debate Resolution] [Finding ID: 1] Adversarial council resolved finding ID 1. Final Severity set to Medium (Confidence: 5%). Rationale: Moderator resolution: Exploiter: escalation is easy.
+[06:08:31] [Decision: Severity Changed] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' severity changed from High to Info
+[06:08:31] [Decision: Evidence Accepted] [Finding ID: 1] Evidence 'HTTP Request Trace' (content length: 51 characters) was accepted and attached to finding ID 1
+[06:08:31] [Decision: Finding Transition] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' state transitioned from HYPOTHESIS to PARTIAL_EVIDENCE (Confidence: 50%, Evidence Count: 1)
+[06:08:31] [Decision: Evidence Accepted] [Finding ID: 1] Evidence 'HTTP Response Trace' (content length: 67 characters) was accepted and attached to finding ID 1
+[06:08:31] [Decision: Finding Transition] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' state transitioned from PARTIAL_EVIDENCE to VALIDATED (Confidence: 95%, Evidence Count: 2)
+[06:13:23] [Decision: Finding Transition] [Finding ID: 1] Finding 'CSRF on delete account' state transitioned from HYPOTHESIS to VALIDATED (Confidence: 85%, Evidence Count: 0)
+[06:13:23] [Decision: Severity Changed] [Finding ID: 1] Finding 'CSRF on delete account' severity changed from Medium to High
+[06:13:23] [Decision: Council Debate Resolution] [Finding ID: 1] Adversarial council resolved finding ID 1. Final Severity set to High (Confidence: 85%). Rationale: Moderator resolution: SEVERITY: High
+CONFIDENCE: 85%
+RATIONALE: Validated via council.
+[06:13:26] [Decision: Severity Changed] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' severity changed from High to Info
+[06:13:26] [Decision: Evidence Accepted] [Finding ID: 1] Evidence 'HTTP Request Trace' (content length: 51 characters) was accepted and attached to finding ID 1
+[06:13:26] [Decision: Finding Transition] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' state transitioned from HYPOTHESIS to PARTIAL_EVIDENCE (Confidence: 50%, Evidence Count: 1)
+[06:13:26] [Decision: Evidence Accepted] [Finding ID: 1] Evidence 'HTTP Response Trace' (content length: 67 characters) was accepted and attached to finding ID 1
+[06:13:26] [Decision: Finding Transition] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' state transitioned from PARTIAL_EVIDENCE to VALIDATED (Confidence: 95%, Evidence Count: 2)
+[11:36:49] [Decision: Finding Transition] [Finding ID: 1] Finding 'CSRF on delete account' state transitioned from HYPOTHESIS to VALIDATED (Confidence: 85%, Evidence Count: 0)
+[11:36:49] [Decision: Severity Changed] [Finding ID: 1] Finding 'CSRF on delete account' severity changed from Medium to High
+[11:36:49] [Decision: Council Debate Resolution] [Finding ID: 1] Adversarial council resolved finding ID 1. Final Severity set to High (Confidence: 85%). Rationale: Moderator resolution: SEVERITY: High
+CONFIDENCE: 85%
+RATIONALE: Validated via council.
+[11:36:51] [Decision: Severity Changed] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' severity changed from High to Info
+[11:36:51] [Decision: Evidence Accepted] [Finding ID: 1] Evidence 'HTTP Request Trace' (content length: 51 characters) was accepted and attached to finding ID 1
+[11:36:51] [Decision: Finding Transition] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' state transitioned from HYPOTHESIS to PARTIAL_EVIDENCE (Confidence: 50%, Evidence Count: 1)
+[11:36:51] [Decision: Evidence Accepted] [Finding ID: 1] Evidence 'HTTP Response Trace' (content length: 67 characters) was accepted and attached to finding ID 1
+[11:36:51] [Decision: Finding Transition] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' state transitioned from PARTIAL_EVIDENCE to VALIDATED (Confidence: 95%, Evidence Count: 2)
+[11:39:01] [Decision: Finding Transition] [Finding ID: 1] Finding 'CSRF on delete account' state transitioned from HYPOTHESIS to VALIDATED (Confidence: 85%, Evidence Count: 0)
+[11:39:01] [Decision: Severity Changed] [Finding ID: 1] Finding 'CSRF on delete account' severity changed from Medium to High
+[11:39:01] [Decision: Council Debate Resolution] [Finding ID: 1] Adversarial council resolved finding ID 1. Final Severity set to High (Confidence: 85%). Rationale: Moderator resolution: SEVERITY: High
+CONFIDENCE: 85%
+RATIONALE: Validated via council.
+[11:39:03] [Decision: Severity Changed] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' severity changed from High to Info
+[11:39:03] [Decision: Evidence Accepted] [Finding ID: 1] Evidence 'HTTP Request Trace' (content length: 51 characters) was accepted and attached to finding ID 1
+[11:39:03] [Decision: Finding Transition] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' state transitioned from HYPOTHESIS to PARTIAL_EVIDENCE (Confidence: 50%, Evidence Count: 1)
+[11:39:03] [Decision: Evidence Accepted] [Finding ID: 1] Evidence 'HTTP Response Trace' (content length: 67 characters) was accepted and attached to finding ID 1
+[11:39:03] [Decision: Finding Transition] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' state transitioned from PARTIAL_EVIDENCE to VALIDATED (Confidence: 95%, Evidence Count: 2)
+[11:43:40] [Decision: Finding Transition] [Finding ID: 1] Finding 'CSRF on delete account' state transitioned from HYPOTHESIS to VALIDATED (Confidence: 85%, Evidence Count: 0)
+[11:43:40] [Decision: Severity Changed] [Finding ID: 1] Finding 'CSRF on delete account' severity changed from Medium to High
+[11:43:40] [Decision: Council Debate Resolution] [Finding ID: 1] Adversarial council resolved finding ID 1. Final Severity set to High (Confidence: 85%). Rationale: Moderator resolution: SEVERITY: High
+CONFIDENCE: 85%
+RATIONALE: Validated via council.
+[11:43:43] [Decision: Severity Changed] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' severity changed from High to Info
+[11:43:43] [Decision: Evidence Accepted] [Finding ID: 1] Evidence 'HTTP Request Trace' (content length: 51 characters) was accepted and attached to finding ID 1
+[11:43:43] [Decision: Finding Transition] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' state transitioned from HYPOTHESIS to PARTIAL_EVIDENCE (Confidence: 50%, Evidence Count: 1)
+[11:43:43] [Decision: Evidence Accepted] [Finding ID: 1] Evidence 'HTTP Response Trace' (content length: 67 characters) was accepted and attached to finding ID 1
+[11:43:43] [Decision: Finding Transition] [Finding ID: 1] Finding 'Potential cross-tenant IDOR' state transitioned from PARTIAL_EVIDENCE to VALIDATED (Confidence: 95%, Evidence Count: 2)
