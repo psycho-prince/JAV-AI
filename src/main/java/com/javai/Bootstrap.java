@@ -18,7 +18,13 @@ public class Bootstrap {
             System.out.println("--------------------------------------------------");
             
             ConsoleUI ui = new ConsoleUI(javAI);
+            
+            com.javai.ui.WebServer webServer = new com.javai.ui.WebServer(javAI, ui);
+            webServer.start();
+            
             ui.run();
+            
+            webServer.stop();
         } catch (Exception e) {
             System.err.println("Fatal error during bootstrap: " + e.getMessage());
             e.printStackTrace();

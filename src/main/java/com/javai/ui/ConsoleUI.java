@@ -1672,15 +1672,16 @@ public class ConsoleUI {
             }
         }
 
-        System.out.println("\n=== Project Dashboard: " + activeProjectName + " ===");
-        System.out.printf("Observations:       %d\n", observationsCount);
-        System.out.printf("Evidence Collected: %d\n", evidenceCount);
-        System.out.printf("Active Hypotheses:  %d (Capped at 3 per target area)\n", hypothesesCount);
-        System.out.printf("Validated Findings: %d\n", validatedCount);
-        System.out.printf("Reported Findings:  %d\n", reportedCount);
-        System.out.printf("Generated Reports:  %d\n", activeReportCount);
-        System.out.println("--------------------------------------------");
-        System.out.println("Playbook Coverage by Target:");
+        System.out.println("\n\u001B[35m╔══════════════════════════════════════════════════════════════╗");
+        System.out.println("║                      PROJECT DASHBOARD                       ║");
+        System.out.printf("║  Active Project: %-42s  ║\n", activeProjectName);
+        System.out.println("╚══════════════════════════════════════════════════════════════╝\u001B[0m");
+        System.out.printf("  \u001B[36m• Observations:\u001B[0m       %-3d       \u001B[32m• Validated Findings:\u001B[0m  %-3d\n", observationsCount, validatedCount);
+        System.out.printf("  \u001B[34m• Evidence Collected:\u001B[0m %-3d       \u001B[31m• Reported Findings:\u001B[0m   %-3d\n", evidenceCount, reportedCount);
+        System.out.printf("  \u001B[33m• Active Hypotheses:\u001B[0m  %-3d       \u001B[35m• Generated Reports:\u001B[0m   %-3d\n", hypothesesCount, activeReportCount);
+        System.out.println("\u001B[35m  (Active Hypotheses are capped at 3 per target area)\u001B[0m");
+        System.out.println("\u001B[34m  ────────────────────────────────────────────────────────────\u001B[0m");
+        System.out.println("  \u001B[1mPlaybook Coverage by Target:\u001B[0m");
         
         String covSql = "SELECT t.domain, c.playbook_name, c.completed_steps, c.total_steps, c.coverage_percent " +
                         "FROM coverage c JOIN targets t ON c.target_id = t.id " +
@@ -1693,19 +1694,29 @@ public class ConsoleUI {
                 int covCount = 0;
                 while (rs.next()) {
                     covCount++;
-                    System.out.printf("  - %s (%s Playbook): %.0f%% (%d/%d steps completed)\n",
-                            rs.getString("domain"),
-                            rs.getString("playbook_name"),
-                            rs.getDouble("coverage_percent"),
-                            rs.getInt("completed_steps"),
-                            rs.getInt("total_steps"));
+                    double pct = rs.getDouble("coverage_percent");
+                    int completed = rs.getInt("completed_steps");
+                    int total = rs.getInt("total_steps");
+                    String domain = rs.getString("domain");
+                    String playbook = rs.getString("playbook_name");
+                    
+                    int filled = (int) Math.round(pct / 10.0);
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < 10; i++) {
+                        if (i < filled) sb.append("█");
+                        else sb.append("░");
+                    }
+                    System.out.printf("    \u001B[36m•\u001B[0m %s (%s Playbook):\n", domain, playbook);
+                    System.out.printf("      \u001B[32m%s\u001B[0m \u001B[1m%.0f%%\u001B[0m (%d/%d steps completed)\n", sb.toString(), pct, completed, total);
                 }
                 if (covCount == 0) {
-                    System.out.println("  No playbook coverage records generated yet.");
+                    System.out.println("    No playbook coverage records generated yet.");
                 }
             }
         }
-        System.out.println("============================================");
+        System.out.println("\u001B[34m  ────────────────────────────────────────────────────────────\u001B[0m");
+        System.out.println("  \u001B[32m[WebServer] Access visual Web Dashboard at http://localhost:1337\u001B[0m");
+        System.out.println("\u001B[35m╚══════════════════════════════════════════════════════════════╝\u001B[0m");
     }
 
     private void handleDecisionCommand(String arg) throws Exception {
@@ -1960,5 +1971,34 @@ public class ConsoleUI {
         } catch (Exception e) {
             System.out.println("[Error] Coder operation failed: " + e.getMessage());
         }
+    }
+
+    public synchronized String executeWebCommand(String input) {
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        java.io.PrintStream ps;
+        try {
+            ps = new java.io.PrintStream(baos, true, "UTF-8");
+        } catch (java.io.UnsupportedEncodingException e) {
+            ps = new java.io.PrintStream(baos, true);
+        }
+        java.io.PrintStream oldOut = System.out;
+        java.io.PrintStream oldErr = System.err;
+        System.setOut(ps);
+        System.setErr(ps);
+        try {
+            if (input.startsWith("/")) {
+                handleCommand(input);
+            } else {
+                handleQuery(input);
+            }
+        } catch (Exception e) {
+            System.out.println("[Error] Command execution failed: " + e.getMessage());
+        } finally {
+            System.out.flush();
+            System.err.flush();
+            System.setOut(oldOut);
+            System.setErr(oldErr);
+        }
+        return baos.toString();
     }
 }
