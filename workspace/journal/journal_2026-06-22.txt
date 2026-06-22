@@ -7,3 +7,6 @@
 [05:44:52] [Evidence Added] Evidence attached to finding ID 1: 'HTTP Request Trace'
 [05:44:52] [Evidence Added] Evidence attached to finding ID 1: 'HTTP Response Trace'
 [05:44:52] [Finding Validated] Finding ID 1 validated with confidence 95.0%
+[05:51:58] [Evidence Added] Evidence attached to finding ID 1: 'HTTP Request Trace'
+[05:51:58] [Evidence Added] Evidence attached to finding ID 1: 'HTTP Response Trace'
+[05:51:58] [Finding Validated] Finding ID 1 validated with confidence 95.0%

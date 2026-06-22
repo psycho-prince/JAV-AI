@@ -23,7 +23,13 @@ public class ConsoleUI {
         
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
             while (running) {
-                System.out.print("\nresearcher@javai:~$ ");
+                String activeProjName = javAI.getMemoryEngine().getActiveProjectName();
+                String activeModelName = javAI.getModelRouter().getActiveModelName();
+                String activeProgName = javAI.getMemoryEngine().getActiveProgramName();
+                if (activeProgName == null) activeProgName = "None";
+                
+                System.out.printf("\n\u001B[34m[Proj: %s | Model: %s | Prog: %s]\u001B[0m\n\u001B[32mresearcher@javai:~$\u001B[0m ",
+                        activeProjName, activeModelName, activeProgName);
                 String input = reader.readLine();
                 if (input == null) break;
                 
@@ -44,13 +50,13 @@ public class ConsoleUI {
     }
 
     private void printBanner() {
-        System.out.println("      __                  ___    ____");
+        System.out.println("\u001B[36m      __                  ___    ____");
         System.out.println("     / /___ __   ______ _/   |  /  _/");
         System.out.println("__  / / __ `/ | / / __ `/ /| |  / /  ");
         System.out.println("/ /_/ / /_/ /| |/ / /_/ / ___ |_/ /   ");
-        System.out.println("\\____/\\__,_/ |___/\\__,_/_/  |_/___/   ");
-        System.out.println("  * Research Edition v1.0 *");
-        System.out.println("Type your queries, or use `/help` to see system commands.");
+        System.out.println("\\____/\\__,_/ |___/\\__,_/_/  |_/___/   \u001B[0m");
+        System.out.println("  \u001B[1m\u001B[35m* JavAI Research Edition v1.0 *\u001B[0m");
+        System.out.println("Type your queries, or use \u001B[33m`/help`\u001B[0m to see system commands.");
     }
 
     private void handleCommand(String input) {
@@ -70,9 +76,13 @@ public class ConsoleUI {
                 case "/status":
                     printStatus();
                     break;
+                case "/new":
                 case "/clear":
                     javAI.getMemoryEngine().clearActiveConversation();
-                    System.out.println("[System] Active conversation history cleared from database.");
+                    System.out.print("\033[H\033[2J");
+                    System.out.flush();
+                    printBanner();
+                    System.out.println("\u001B[32m[System] Active conversation history cleared and terminal screen reset.\u001B[0m");
                     break;
                 case "/history":
                     printHistory();
