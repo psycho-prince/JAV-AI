@@ -28,16 +28,17 @@ public class QwenProvider implements LLMProvider {
     @Override
     public void initialize() throws Exception {
         this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
+                .connectTimeout(Duration.ofSeconds(config.getTimeoutSeconds()))
                 .build();
         this.objectMapper = new ObjectMapper();
     }
 
     @Override
     public LLMResponse complete(LLMRequest request) throws Exception {
+        String requestBody = "";
         try {
             ObjectNode rootNode = objectMapper.createObjectNode();
-            rootNode.put("model", "qwen2.5:latest");
+            rootNode.put("model", config.getModelName());
             rootNode.put("temperature", request.getTemperature());
 
             ArrayNode messagesArray = objectMapper.createArrayNode();
@@ -49,32 +50,51 @@ public class QwenProvider implements LLMProvider {
             }
             rootNode.set("messages", messagesArray);
 
-            String requestBody = objectMapper.writeValueAsString(rootNode);
-
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(config.getEndpoint()))
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + config.getApiKey())
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .build();
-
-            HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-
-            if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 300) {
-                JsonNode responseJson = objectMapper.readTree(httpResponse.body());
-                String content = responseJson.path("choices")
-                        .path(0)
-                        .path("message")
-                        .path("content")
-                        .asText();
-                return new LLMResponse(content);
-            } else {
-                throw new Exception("HTTP " + httpResponse.statusCode() + " - " + httpResponse.body());
-            }
+            requestBody = objectMapper.writeValueAsString(rootNode);
         } catch (Exception e) {
-            // Simulated local Qwen fallback response
-            return new LLMResponse("[Simulation Qwen] Model response to: \"" 
-                    + request.getMessages().get(request.getMessages().size() - 1).getContent() + "\"");
+            throw new Exception("Qwen serialization error: " + e.getMessage());
         }
+
+        int maxRetries = 3;
+        int delayMs = 1000;
+        Exception lastException = null;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                HttpRequest httpRequest = HttpRequest.newBuilder()
+                        .uri(URI.create(config.getEndpoint()))
+                        .header("Content-Type", "application/json")
+                        .header("Authorization", "Bearer " + config.getApiKey())
+                        .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                        .timeout(Duration.ofSeconds(config.getTimeoutSeconds()))
+                        .build();
+
+                HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+                if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 300) {
+                    JsonNode responseJson = objectMapper.readTree(httpResponse.body());
+                    String content = responseJson.path("choices")
+                            .path(0)
+                            .path("message")
+                            .path("content")
+                            .asText();
+                    return new LLMResponse(content);
+                } else {
+                    throw new Exception("HTTP " + httpResponse.statusCode() + " - " + httpResponse.body());
+                }
+            } catch (Exception e) {
+                lastException = e;
+                if (attempt < maxRetries) {
+                    System.out.printf("[QwenProvider] Network connection failed (attempt %d/%d): %s. Retrying in %d ms...\n",
+                            attempt, maxRetries, e.getMessage(), delayMs);
+                    Thread.sleep(delayMs);
+                    delayMs *= 2;
+                }
+            }
+        }
+
+        // Qwen Provider simulated fallback
+        return new LLMResponse("[Simulation Qwen] Connection to " + config.getEndpoint() + " failed: " + lastException.getMessage() 
+                + ". Model fallback response to: \"" + request.getMessages().get(request.getMessages().size() - 1).getContent() + "\"");
     }
 }

@@ -5,6 +5,8 @@ public class LocalModelConfig {
     private String endpoint = "http://localhost:11434/v1/chat/completions";
     private String apiKey = "na";
     private double temperature = 0.7;
+    private String modelName = "qwen2.5:latest";
+    private int timeoutSeconds = 10;
 
     public String getActiveModel() {
         return activeModel;
@@ -36,5 +38,21 @@ public class LocalModelConfig {
 
     public void setTemperature(double temperature) {
         this.temperature = temperature;
+    }
+
+    public String getModelName() {
+        return modelName;
+    }
+
+    public void setModelName(String modelName) {
+        this.modelName = modelName;
+    }
+
+    public int getTimeoutSeconds() {
+        return timeoutSeconds;
+    }
+
+    public void setTimeoutSeconds(int timeoutSeconds) {
+        this.timeoutSeconds = timeoutSeconds;
     }
 }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.javai.llm.LLMProvider;
 import com.javai.llm.LLMRequest;
 import com.javai.llm.LLMResponse;
+import com.javai.llm.LocalModelConfig;
 import com.javai.models.Message;
 
 import java.net.URI;
@@ -16,31 +17,28 @@ import java.net.http.HttpResponse;
 import java.time.Duration;
 
 public class OpenAICompatibleProvider implements LLMProvider {
-    private String endpointUrl;
-    private String modelName;
-    private String apiKey;
+    private final LocalModelConfig config;
     private HttpClient httpClient;
     private ObjectMapper objectMapper;
 
+    public OpenAICompatibleProvider(LocalModelConfig config) {
+        this.config = config;
+    }
+
     @Override
     public void initialize() throws Exception {
-        // Fallback defaults for Ollama: http://localhost:11434/v1/chat/completions
-        this.endpointUrl = System.getProperty("javai.llm.endpoint", "http://localhost:11434/v1/chat/completions");
-        this.modelName = System.getProperty("javai.llm.model", "qwen2.5:latest");
-        this.apiKey = System.getProperty("javai.llm.key", "na");
-
         this.httpClient = HttpClient.newBuilder()
-                .connectTimeout(Duration.ofSeconds(10))
+                .connectTimeout(Duration.ofSeconds(config.getTimeoutSeconds()))
                 .build();
         this.objectMapper = new ObjectMapper();
     }
 
     @Override
     public LLMResponse complete(LLMRequest request) throws Exception {
+        String requestBody = "";
         try {
-            // Build Jackson JSON node representation for the request
             ObjectNode rootNode = objectMapper.createObjectNode();
-            rootNode.put("model", modelName);
+            rootNode.put("model", config.getModelName());
             rootNode.put("temperature", request.getTemperature());
 
             ArrayNode messagesArray = objectMapper.createArrayNode();
@@ -52,39 +50,55 @@ public class OpenAICompatibleProvider implements LLMProvider {
             }
             rootNode.set("messages", messagesArray);
 
-            String requestBody = objectMapper.writeValueAsString(rootNode);
-
-            // Execute HTTP Request
-            HttpRequest httpRequest = HttpRequest.newBuilder()
-                    .uri(URI.create(endpointUrl))
-                    .header("Content-Type", "application/json")
-                    .header("Authorization", "Bearer " + apiKey)
-                    .POST(HttpRequest.BodyPublishers.ofString(requestBody))
-                    .build();
-
-            HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
-
-            if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 300) {
-                JsonNode responseJson = objectMapper.readTree(httpResponse.body());
-                String content = responseJson.path("choices")
-                        .path(0)
-                        .path("message")
-                        .path("content")
-                        .asText();
-                return new LLMResponse(content);
-            } else {
-                throw new Exception("HTTP request failed with status code: " + httpResponse.statusCode() + " - " + httpResponse.body());
-            }
+            requestBody = objectMapper.writeValueAsString(rootNode);
         } catch (Exception e) {
-            // Unreachable or offline local LLM server fallback for bootstrap testing convenience
-            System.out.println("[OpenAICompatibleProvider] WARNING: Failed to reach LLM endpoint: " + e.getMessage());
-            System.out.println("[OpenAICompatibleProvider] Status: Falling back to local diagnostic simulation mode.");
-            return getSimulatedResponse(request);
+            throw new Exception("Failed to serialize request JSON: " + e.getMessage());
         }
+
+        int maxRetries = 3;
+        int delayMs = 1000;
+        Exception lastException = null;
+
+        for (int attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                HttpRequest httpRequest = HttpRequest.newBuilder()
+                        .uri(URI.create(config.getEndpoint()))
+                        .header("Content-Type", "application/json")
+                        .header("Authorization", "Bearer " + config.getApiKey())
+                        .POST(HttpRequest.BodyPublishers.ofString(requestBody))
+                        .timeout(Duration.ofSeconds(config.getTimeoutSeconds()))
+                        .build();
+
+                HttpResponse<String> httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
+
+                if (httpResponse.statusCode() >= 200 && httpResponse.statusCode() < 300) {
+                    JsonNode responseJson = objectMapper.readTree(httpResponse.body());
+                    String content = responseJson.path("choices")
+                            .path(0)
+                            .path("message")
+                            .path("content")
+                            .asText();
+                    return new LLMResponse(content);
+                } else {
+                    throw new Exception("HTTP request failed with status code: " + httpResponse.statusCode() + " - " + httpResponse.body());
+                }
+            } catch (Exception e) {
+                lastException = e;
+                if (attempt < maxRetries) {
+                    System.out.printf("[OpenAICompatibleProvider] Network connection failed (attempt %d/%d): %s. Retrying in %d ms...\n",
+                            attempt, maxRetries, e.getMessage(), delayMs);
+                    Thread.sleep(delayMs);
+                    delayMs *= 2;
+                }
+            }
+        }
+
+        System.out.println("[OpenAICompatibleProvider] WARNING: Failed to reach LLM endpoint after " + maxRetries + " attempts: " + lastException.getMessage());
+        System.out.println("[OpenAICompatibleProvider] Status: Falling back to local diagnostic simulation mode.");
+        return getSimulatedResponse(request);
     }
 
     private LLMResponse getSimulatedResponse(LLMRequest request) {
-        // Simple mock responses to keep testing fluent without demanding an active Ollama instance on build
         String lastUserPrompt = "";
         if (request.getMessages() != null && !request.getMessages().isEmpty()) {
             Message lastMsg = request.getMessages().get(request.getMessages().size() - 1);
@@ -98,7 +112,7 @@ public class OpenAICompatibleProvider implements LLMProvider {
         } else if (lastUserPrompt.contains("hello") || lastUserPrompt.contains("hi")) {
             return new LLMResponse("Hello! I am your local JavAI agent. Memory and Storage layers are online. How can I assist your research today?");
         } else {
-            return new LLMResponse("Simulation Engine received: \"" + lastUserPrompt + "\". Local SQLite storage commits and retrieves successfully. (Connect to Ollama to replace mock response).");
+            return new LLMResponse("Simulation Engine received: \"" + lastUserPrompt + "\". Local SQLite storage commits and retrieves successfully. (Connect to Ollama/OpenAI server at " + config.getEndpoint() + " to replace mock response).");
         }
     }
 }

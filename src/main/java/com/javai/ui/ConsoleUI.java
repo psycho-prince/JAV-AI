@@ -456,23 +456,96 @@ public class ConsoleUI {
 
         if (subcmd.isEmpty() || subcmd.equals("status")) {
             System.out.println("Model Router Status:");
-            System.out.println("  - Active Model: " + javAI.getModelRouter().getActiveModelName());
-            System.out.println("  - Endpoint: " + javAI.getModelConfig().getEndpoint());
+            System.out.println("  - Active Provider Type: " + javAI.getModelRouter().getActiveModelName());
+            System.out.println("  - Target Model Name:    " + javAI.getModelConfig().getModelName());
+            System.out.println("  - Connection Endpoint:  " + javAI.getModelConfig().getEndpoint());
+            System.out.println("  - Timeout Config:       " + javAI.getModelConfig().getTimeoutSeconds() + " seconds");
+            System.out.println("  - Temperature:          " + javAI.getModelConfig().getTemperature());
         } else if (subcmd.equals("list")) {
-            System.out.println("Available Models:");
+            System.out.println("Available Model Providers:");
             for (String modelName : javAI.getModelRouter().getAvailableModels()) {
                 System.out.println("  - " + modelName + (modelName.equals(javAI.getModelRouter().getActiveModelName()) ? " (active)" : ""));
             }
         } else if (subcmd.equals("switch")) {
             if (subarg.isEmpty()) {
-                System.out.println("[System] Please specify a model name to switch to. E.g. `/model switch qwen` or `/model switch openai`.");
+                System.out.println("[System] Please specify a model provider. E.g. `/model switch qwen` or `/model switch openai`.");
                 return;
             }
             boolean success = javAI.getModelRouter().setActiveModel(subarg);
             if (success) {
-                System.out.println("[System] Switched active model to: " + javAI.getModelRouter().getActiveModelName());
+                System.out.println("[System] Switched active model provider to: " + javAI.getModelRouter().getActiveModelName());
             } else {
-                System.out.println("[System] Model '" + subarg + "' not recognized. Available: " + javAI.getModelRouter().getAvailableModels());
+                System.out.println("[System] Provider '" + subarg + "' not recognized. Available: " + javAI.getModelRouter().getAvailableModels());
+            }
+        } else if (subcmd.equals("test")) {
+            System.out.println("[System] Testing connectivity to active model provider '" + javAI.getModelRouter().getActiveModelName() + "' at endpoint '" + javAI.getModelConfig().getEndpoint() + "'...");
+            try {
+                com.javai.llm.LLMRequest request = new com.javai.llm.LLMRequest();
+                List<com.javai.models.Message> messages = new java.util.ArrayList<>();
+                messages.add(new com.javai.models.Message("user", "Hello connection test"));
+                request.setMessages(messages);
+                request.setTemperature(0.1);
+                
+                long start = System.currentTimeMillis();
+                com.javai.llm.LLMResponse response = javAI.getModelRouter().complete(request);
+                long duration = System.currentTimeMillis() - start;
+                
+                System.out.println("\n=== Connection Test Result ===");
+                System.out.println("Status: ONLINE");
+                System.out.println("Response Time: " + duration + " ms");
+                System.out.println("Response Snippet: " + response.getContent().substring(0, Math.min(100, response.getContent().length())) + "...");
+                System.out.println("==============================");
+            } catch (Exception e) {
+                System.out.println("\n=== Connection Test Result ===");
+                System.out.println("Status: OFFLINE (Connection failed)");
+                System.out.println("Error: " + e.getMessage());
+                System.out.println("==============================");
+            }
+        } else if (subcmd.equals("configure")) {
+            if (subarg.isEmpty()) {
+                System.out.println("[System] Use: `/model configure <endpoint|key|model|temp|timeout> <value>`");
+                return;
+            }
+            String[] configParts = subarg.split(" ", 2);
+            if (configParts.length < 2) {
+                System.out.println("[System] Please specify a value. E.g. `/model configure temp 0.8`.");
+                return;
+            }
+            String key = configParts[0].toLowerCase();
+            String value = configParts[1].trim();
+            
+            com.javai.llm.LocalModelConfig config = javAI.getModelConfig();
+            if (key.equals("endpoint")) {
+                config.setEndpoint(value);
+                System.out.println("[System] Model endpoint set to: " + value);
+            } else if (key.equals("key")) {
+                config.setApiKey(value);
+                System.out.println("[System] Model API key updated.");
+            } else if (key.equals("model")) {
+                config.setModelName(value);
+                System.out.println("[System] Target model name set to: " + value);
+            } else if (key.equals("temp")) {
+                try {
+                    config.setTemperature(Double.parseDouble(value));
+                    System.out.println("[System] Model temperature set to: " + value);
+                } catch (NumberFormatException e) {
+                    System.out.println("[Error] Invalid temperature value: " + value);
+                }
+            } else if (key.equals("timeout")) {
+                try {
+                    config.setTimeoutSeconds(Integer.parseInt(value));
+                    System.out.println("[System] Model timeout set to: " + value + " seconds");
+                } catch (NumberFormatException e) {
+                    System.out.println("[Error] Invalid timeout value: " + value);
+                }
+            } else {
+                System.out.println("[System] Unknown configuration key: " + key + ". Available: endpoint, key, model, temp, timeout.");
+            }
+            
+            try {
+                javAI.getModelRouter().initialize();
+            } catch (Exception e) {
+                System.out.println("[Warning] Failed to re-initialize model router: " + e.getMessage());
             }
         } else {
             System.out.println("[System] Unknown model command. Use `/model status`, `/model list`, or `/model switch <name>`.");
@@ -675,6 +748,8 @@ public class ConsoleUI {
         System.out.println("  /model status           Show current model configuration.");
         System.out.println("  /model list             List all registered LLM models.");
         System.out.println("  /model switch [name]    Switch active model (e.g., `/model switch qwen`).");
+        System.out.println("  /model test             Test connection to the active LLM provider.");
+        System.out.println("  /model configure [k] [v]Set config parameters: endpoint, key, model, temp, timeout.");
         System.out.println("  /project create [N]     Create a new project (e.g., `/project create myproject`).");
         System.out.println("  /project switch [N]     Switch active project.");
         System.out.println("  /project list           List all projects.");

@@ -19,7 +19,7 @@ public class ModelRouter implements LLMProvider {
     @Override
     public void initialize() throws Exception {
         // Initialize OpenAI compatible provider
-        OpenAICompatibleProvider openAiProvider = new OpenAICompatibleProvider();
+        OpenAICompatibleProvider openAiProvider = new OpenAICompatibleProvider(config);
         openAiProvider.initialize();
         providers.put("openai", openAiProvider);
 
