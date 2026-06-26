@@ -41,6 +41,7 @@ public class WebServer {
             server.createContext("/api/findings", new FindingsHandler());
             server.createContext("/api/observations", new ObservationsHandler());
             server.createContext("/api/query", new QueryHandler());
+            server.createContext("/v1/chat/completions", new OpenAICompletionsHandler());
 
             server.setExecutor(Executors.newCachedThreadPool());
             server.start();
@@ -945,5 +946,72 @@ public class WebServer {
                 "    </script>\n" +
                 "</body>\n" +
                 "</html>\n";
+    }
+
+    private class OpenAICompletionsHandler implements com.sun.net.httpserver.HttpHandler {
+        @Override
+        public void handle(com.sun.net.httpserver.HttpExchange exchange) throws IOException {
+            // Support CORS preflight
+            if (exchange.getRequestMethod().equalsIgnoreCase("OPTIONS")) {
+                exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
+                exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "POST, OPTIONS");
+                exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+                exchange.sendResponseHeaders(204, -1);
+                return;
+            }
+
+            if (!exchange.getRequestMethod().equalsIgnoreCase("POST")) {
+                exchange.sendResponseHeaders(405, 0);
+                return;
+            }
+
+            try {
+                InputStream is = exchange.getRequestBody();
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = is.read(buffer)) > -1) {
+                    bos.write(buffer, 0, len);
+                }
+                String body = bos.toString(StandardCharsets.UTF_8);
+
+                com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(body);
+                com.fasterxml.jackson.databind.JsonNode messagesNode = root.get("messages");
+                
+                String lastUserMessage = "";
+                if (messagesNode != null && messagesNode.isArray() && messagesNode.size() > 0) {
+                    com.fasterxml.jackson.databind.JsonNode lastMsg = messagesNode.get(messagesNode.size() - 1);
+                    lastUserMessage = lastMsg.path("content").asText();
+                }
+
+                // Process standard query through JavAI Agent Engine
+                String responseText = consoleUI.executeWebCommand(lastUserMessage);
+
+                // Build standard OpenAI response body
+                ObjectNode responseJson = mapper.createObjectNode();
+                responseJson.put("id", "chatcmpl-javai-" + System.currentTimeMillis());
+                responseJson.put("object", "chat.completion");
+                responseJson.put("created", System.currentTimeMillis() / 1000L);
+                responseJson.put("model", "javai");
+
+                ArrayNode choices = mapper.createArrayNode();
+                ObjectNode choice = mapper.createObjectNode();
+                choice.put("index", 0);
+                
+                ObjectNode message = mapper.createObjectNode();
+                message.put("role", "assistant");
+                message.put("content", responseText);
+                
+                choice.set("message", message);
+                choice.put("finish_reason", "stop");
+                choices.add(choice);
+                responseJson.set("choices", choices);
+
+                byte[] bytes = mapper.writeValueAsBytes(responseJson);
+                sendJsonResponse(exchange, 200, bytes);
+            } catch (Exception e) {
+                sendErrorResponse(exchange, e);
+            }
+        }
     }
 }

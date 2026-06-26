@@ -28,6 +28,16 @@ public class ModelRouter implements LLMProvider {
         qwenProvider.initialize();
         providers.put("qwen", qwenProvider);
 
+        // Initialize Gemini provider
+        com.javai.llm.providers.GeminiProvider geminiProvider = new com.javai.llm.providers.GeminiProvider(config);
+        geminiProvider.initialize();
+        providers.put("gemini", geminiProvider);
+
+        // Initialize Claude provider
+        com.javai.llm.providers.ClaudeProvider claudeProvider = new com.javai.llm.providers.ClaudeProvider(config);
+        claudeProvider.initialize();
+        providers.put("claude", claudeProvider);
+
         // Make sure the active model is registered, fallback to openai if not
         if (!providers.containsKey(activeModelName.toLowerCase())) {
             activeModelName = "openai";
