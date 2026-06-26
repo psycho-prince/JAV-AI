@@ -1,0 +1,24 @@
+{
+  "name": "javai",
+  "version": "1.0.0",
+  "description": "JavAI Research Edition - Adversarial Security Agent and Post-Quantum Code Architect",
+  "bin": {
+    "javai": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "author": "DeepMind Team",
+  "license": "ISC",
+  "files": [
+    "bin/",
+    "src/",
+    "pom.xml",
+    "README.md",
+    "ROADMAP.md",
+    "workspace/dashboard/"
+  ]
+}
