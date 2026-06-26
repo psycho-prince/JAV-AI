@@ -23,6 +23,10 @@ public class BuildVerifier {
         processBuilder.directory(workspaceRoot.toAbsolutePath().normalize().toFile());
         processBuilder.redirectErrorStream(true);
 
+        // Prevent Maven command-line args or launcher variables from polluting nested child builds
+        java.util.Map<String, String> env = processBuilder.environment();
+        env.keySet().removeIf(key -> key.startsWith("MAVEN_") || key.startsWith("M2") || key.contains("CLASSWORLDS") || key.startsWith("SUREFIRE_"));
+
         long startedAt = System.currentTimeMillis();
         Process process = processBuilder.start();
         StringBuilder output = new StringBuilder();

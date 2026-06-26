@@ -159,6 +159,9 @@ public class ConsoleUI {
                 case "/coder":
                     handleCoderCommand(arg);
                     break;
+                case "/verify":
+                    handleCoderCommand("verify " + arg);
+                    break;
                 case "/subfinder":
                 case "/httpx":
                 case "/nmap":

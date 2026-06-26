@@ -773,6 +773,56 @@ Type messages/queries to prompt the LLM Agent, or run commands directly like:
                         </div>
                     </div>
                 </div>
+                
+                <div class="card" style="margin-top: 24px; min-height: 450px;">
+                    <div class="card-header">
+                        <span class="card-title">Workspace Health & Build Verifier</span>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="send-btn" style="background: var(--cyan); padding: 8px 16px; font-size: 13px;" onclick="inspectWorkspace()">Inspect Workspace</button>
+                            <button class="send-btn" style="background: var(--green); padding: 8px 16px; font-size: 13px;" onclick="verifyWorkspace()">Run Verification Tests</button>
+                        </div>
+                    </div>
+                    <div class="dashboard-body" style="grid-template-columns: 1fr 2fr; margin-top: 8px;">
+                        <!-- Left Panel: Workspace Profile -->
+                        <div style="display: flex; flex-direction: column; gap: 16px; border-right: 1px solid var(--glass-border); padding-right: 24px; overflow-y: auto;">
+                            <div>
+                                <span style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Build Framework</span>
+                                <div id="ws-build-system" style="font-size: 20px; font-weight: 600; color: var(--cyan-glow); margin-top: 4px;">Not Scanned</div>
+                            </div>
+                            <div>
+                                <span style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Root Directory</span>
+                                <div id="ws-root-path" style="font-size: 14px; font-family: 'JetBrains Mono', monospace; word-break: break-all; margin-top: 4px; color: var(--text-main);">-</div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px;">
+                                    <div style="font-size: 12px; color: var(--text-muted);">Source Files</div>
+                                    <div id="ws-src-count" style="font-size: 24px; font-weight: 800;">0</div>
+                                </div>
+                                <div style="background: rgba(255,255,255,0.01); border: 1px solid var(--glass-border); padding: 12px; border-radius: 8px;">
+                                    <div style="font-size: 12px; color: var(--text-muted);">Test Files</div>
+                                    <div id="ws-test-count" style="font-size: 24px; font-weight: 800;">0</div>
+                                </div>
+                            </div>
+                            <div style="flex: 1; min-height: 150px; display: flex; flex-direction: column; gap: 8px;">
+                                <span style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Detected Verification Commands</span>
+                                <div id="ws-commands-list" style="display: flex; flex-direction: column; gap: 6px; font-size: 13px;">
+                                    <div style="color: var(--text-muted); font-style: italic;">No commands detected yet</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Panel: Execution Output Console -->
+                        <div style="display: flex; flex-direction: column; gap: 12px; min-height: 0;">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 13px; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.5px;">Test / Build Execution Log</span>
+                                <div id="ws-verify-status" style="display: flex; align-items: center; gap: 8px;">
+                                    <!-- Status badge -->
+                                </div>
+                            </div>
+                            <div style="flex: 1; background: var(--terminal-bg); border: 1px solid var(--glass-border); border-radius: 8px; padding: 16px; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 13px; color: #10b981; min-height: 250px; max-height: 400px; white-space: pre-wrap;" id="ws-console-log">Ready. Click "Run Verification Tests" to compile and run workspace checks.</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -799,6 +849,8 @@ Type messages/queries to prompt the LLM Agent, or run commands directly like:
                 refreshDashboard();
             } else if (tabId === 'tab-findings') {
                 loadFindings();
+            } else if (tabId === 'tab-coder') {
+                inspectWorkspace();
             }
         }
 
@@ -949,6 +1001,109 @@ Type messages/queries to prompt the LLM Agent, or run commands directly like:
             const file = document.getElementById('c-audit-file').value.trim();
             if (!file) return;
             quickCommand(`/coder audit ${file}`);
+        }
+
+        function inspectWorkspace() {
+            const consoleLog = document.getElementById('ws-console-log');
+            consoleLog.style.color = '#38bdf8';
+            consoleLog.innerText = 'Scanning workspace directory and profiling project files...';
+            
+            fetch(`${baseUrl}/api/workspace/inspect`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: '.' })
+            })
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error(`HTTP Error ${r.status}`);
+                }
+                return r.json();
+            })
+            .then(d => {
+                document.getElementById('ws-build-system').innerText = d.buildSystem || 'Unknown';
+                document.getElementById('ws-root-path').innerText = d.rootPath || '-';
+                document.getElementById('ws-src-count').innerText = d.sourceFiles ? d.sourceFiles.length : 0;
+                document.getElementById('ws-test-count').innerText = d.testFiles ? d.testFiles.length : 0;
+                
+                const cmdsList = document.getElementById('ws-commands-list');
+                cmdsList.innerHTML = '';
+                if (d.verificationCommands && d.verificationCommands.length > 0) {
+                    d.verificationCommands.forEach(cmd => {
+                        cmdsList.innerHTML += `
+                            <div style="background: rgba(6, 182, 212, 0.05); border: 1px solid rgba(6, 182, 212, 0.2); padding: 8px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--cyan-glow);">
+                                <strong>${cmd.name}:</strong> <code>${cmd.command}</code>
+                            </div>
+                        `;
+                    });
+                } else {
+                    cmdsList.innerHTML = '<div style="color: var(--text-muted); font-style: italic;">No automated build systems detected.</div>';
+                }
+                
+                consoleLog.style.color = '#10b981';
+                consoleLog.innerText = 'Workspace scanned successfully.\n\nSummary:\n' +
+                    `- Root Path: ${d.rootPath}\n` +
+                    `- Build Tool: ${d.buildSystem}\n` +
+                    `- Source Files Found: ${d.sourceFiles.length}\n` +
+                    `- Test Files Found: ${d.testFiles.length}\n` +
+                    `- Documentation Files: ${d.documentationFiles.length}\n` +
+                    `- Database/State Paths: ${d.generatedPaths.length}\n\n` +
+                    'Details:\n' +
+                    `Source Files:\n${d.sourceFiles.map(f => '  ' + f).join('\n')}`;
+            })
+            .catch(err => {
+                consoleLog.style.color = '#f43f5e';
+                consoleLog.innerText = `Scan Error: ${err.message}`;
+            });
+        }
+
+        function verifyWorkspace() {
+            const consoleLog = document.getElementById('ws-console-log');
+            const statusDiv = document.getElementById('ws-verify-status');
+            
+            consoleLog.style.color = '#a855f7';
+            consoleLog.innerText = 'Running build/test verification suite. Please wait...\n';
+            statusDiv.innerHTML = '<span class="badge" style="background: rgba(168,85,247,0.15); color: var(--primary-glow); border:1px solid rgba(168,85,247,0.3);">RUNNING</span>';
+            
+            fetch(`${baseUrl}/api/workspace/verify`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ path: '.' })
+            })
+            .then(r => {
+                if (!r.ok) {
+                    throw new Error(`HTTP Error ${r.status}`);
+                }
+                return r.json();
+            })
+            .then(d => {
+                const isPass = d.success;
+                const timedOut = d.timedOut;
+                
+                let badgeHtml = '';
+                if (isPass) {
+                    badgeHtml = '<span class="badge validated">PASS</span>';
+                    consoleLog.style.color = '#34d399';
+                } else if (timedOut) {
+                    badgeHtml = '<span class="badge" style="background:rgba(249,115,22,0.15); color:var(--orange-glow); border:1px solid rgba(249,115,22,0.3);">TIMEOUT</span>';
+                    consoleLog.style.color = '#fb923c';
+                } else {
+                    badgeHtml = '<span class="badge critical">FAIL</span>';
+                    consoleLog.style.color = '#fb7185';
+                }
+                statusDiv.innerHTML = badgeHtml;
+                
+                consoleLog.innerText = `Command executed: ${d.command}\n` +
+                    `Exit Code: ${d.exitCode}\n` +
+                    `Duration: ${d.durationMillis} ms\n` +
+                    `Timed Out: ${d.timedOut}\n\n` +
+                    `Output:\n--------------------------------------------------\n` +
+                    `${d.output}`;
+            })
+            .catch(err => {
+                consoleLog.style.color = '#f43f5e';
+                consoleLog.innerText = `Verification Error: ${err.message}`;
+                statusDiv.innerHTML = '<span class="badge critical">ERROR</span>';
+            });
         }
     </script>
 </body>

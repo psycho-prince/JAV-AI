@@ -41,6 +41,8 @@ public class WebServer {
             server.createContext("/api/findings", new FindingsHandler());
             server.createContext("/api/observations", new ObservationsHandler());
             server.createContext("/api/query", new QueryHandler());
+            server.createContext("/api/workspace/inspect", new WorkspaceInspectHandler());
+            server.createContext("/api/workspace/verify", new WorkspaceVerifyHandler());
             server.createContext("/v1/chat/completions", new OpenAICompletionsHandler());
 
             server.setExecutor(Executors.newCachedThreadPool());
@@ -326,6 +328,127 @@ public class WebServer {
                 ObjectNode response = mapper.createObjectNode();
                 response.put("query", query);
                 response.put("response", responseText);
+
+                byte[] bytes = mapper.writeValueAsBytes(response);
+                sendJsonResponse(exchange, 200, bytes);
+            } catch (Exception e) {
+                sendErrorResponse(exchange, e);
+            }
+        }
+    }
+
+    private class WorkspaceInspectHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            try {
+                String rootPath = ".";
+                if (exchange.getRequestMethod().equalsIgnoreCase("POST")) {
+                    InputStream is = exchange.getRequestBody();
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = is.read(buffer)) > -1) {
+                        bos.write(buffer, 0, len);
+                    }
+                    String body = bos.toString(StandardCharsets.UTF_8);
+                    if (!body.isBlank()) {
+                        com.fasterxml.jackson.databind.JsonNode bodyNode = mapper.readTree(body);
+                        if (bodyNode.has("path")) {
+                            rootPath = bodyNode.get("path").asText();
+                        }
+                    }
+                }
+
+                com.javai.security.coder.CoderEngine coder = new com.javai.security.coder.CoderEngine(
+                        javAI.getDatabaseManager(),
+                        javAI.getModelRouter(),
+                        javAI.getMemoryEngine()
+                );
+                
+                com.javai.security.coder.WorkspaceProfile profile = coder.inspectWorkspace(rootPath);
+                
+                ObjectNode response = mapper.createObjectNode();
+                response.put("rootPath", profile.getRootPath());
+                response.put("buildSystem", profile.getBuildSystem());
+                
+                ArrayNode sourceFiles = mapper.createArrayNode();
+                for (String f : profile.getSourceFiles()) {
+                    sourceFiles.add(f);
+                }
+                response.set("sourceFiles", sourceFiles);
+
+                ArrayNode testFiles = mapper.createArrayNode();
+                for (String f : profile.getTestFiles()) {
+                    testFiles.add(f);
+                }
+                response.set("testFiles", testFiles);
+
+                ArrayNode docFiles = mapper.createArrayNode();
+                for (String f : profile.getDocumentationFiles()) {
+                    docFiles.add(f);
+                }
+                response.set("documentationFiles", docFiles);
+
+                ArrayNode genPaths = mapper.createArrayNode();
+                for (String f : profile.getGeneratedPaths()) {
+                    genPaths.add(f);
+                }
+                response.set("generatedPaths", genPaths);
+
+                ArrayNode verifyCmds = mapper.createArrayNode();
+                for (com.javai.security.coder.VerificationCommand cmd : profile.getVerificationCommands()) {
+                    ObjectNode cmdNode = mapper.createObjectNode();
+                    cmdNode.put("name", cmd.getName());
+                    cmdNode.put("command", cmd.asShellString());
+                    verifyCmds.add(cmdNode);
+                }
+                response.set("verificationCommands", verifyCmds);
+
+                byte[] bytes = mapper.writeValueAsBytes(response);
+                sendJsonResponse(exchange, 200, bytes);
+            } catch (Exception e) {
+                sendErrorResponse(exchange, e);
+            }
+        }
+    }
+
+    private class WorkspaceVerifyHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            try {
+                String rootPath = ".";
+                if (exchange.getRequestMethod().equalsIgnoreCase("POST")) {
+                    InputStream is = exchange.getRequestBody();
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    byte[] buffer = new byte[1024];
+                    int len;
+                    while ((len = is.read(buffer)) > -1) {
+                        bos.write(buffer, 0, len);
+                    }
+                    String body = bos.toString(StandardCharsets.UTF_8);
+                    if (!body.isBlank()) {
+                        com.fasterxml.jackson.databind.JsonNode bodyNode = mapper.readTree(body);
+                        if (bodyNode.has("path")) {
+                            rootPath = bodyNode.get("path").asText();
+                        }
+                    }
+                }
+
+                com.javai.security.coder.CoderEngine coder = new com.javai.security.coder.CoderEngine(
+                        javAI.getDatabaseManager(),
+                        javAI.getModelRouter(),
+                        javAI.getMemoryEngine()
+                );
+                
+                com.javai.security.coder.BuildVerifier.VerificationResult result = coder.verifyWorkspace(rootPath);
+                
+                ObjectNode response = mapper.createObjectNode();
+                response.put("success", result.isSuccess());
+                response.put("exitCode", result.getExitCode());
+                response.put("timedOut", result.isTimedOut());
+                response.put("durationMillis", result.getDurationMillis());
+                response.put("output", result.getOutput());
+                response.put("command", result.getCommand().asShellString());
 
                 byte[] bytes = mapper.writeValueAsBytes(response);
                 sendJsonResponse(exchange, 200, bytes);
