@@ -269,7 +269,9 @@ public class WebServer {
                 int activeProjectId = javAI.getMemoryEngine().getActiveProjectId();
                 ArrayNode observations = mapper.createArrayNode();
 
-                String sql = "SELECT id, title, content, type, state, created_at FROM observations WHERE project_id = ? ORDER BY id DESC";
+                String sql = "SELECT o.id, t.domain, o.description, o.source, o.confidence, o.created_at " +
+                        "FROM observations o JOIN targets t ON o.target_id = t.id " +
+                        "WHERE o.project_id = ? ORDER BY o.id DESC";
                 try (Connection conn = javAI.getDatabaseManager().getConnection();
                      PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setInt(1, activeProjectId);
@@ -277,11 +279,11 @@ public class WebServer {
                         while (rs.next()) {
                             ObjectNode node = mapper.createObjectNode();
                             node.put("id", rs.getInt("id"));
-                            node.put("title", rs.getString("title"));
-                            node.put("content", rs.getString("content"));
-                            node.put("type", rs.getString("type"));
-                            node.put("state", rs.getString("state"));
-                            node.put("created_at", rs.getString("created_at"));
+                            node.put("target", rs.getString("domain"));
+                            node.put("description", rs.getString("description"));
+                            node.put("source", rs.getString("source"));
+                            node.put("confidence", rs.getDouble("confidence"));
+                            node.put("created_at", rs.getLong("created_at"));
                             observations.add(node);
                         }
                     }

@@ -159,6 +159,7 @@ public class MemoryEngine {
                 try (Connection conn = databaseManager.getConnection();
                      PreparedStatement stmt = conn.prepareStatement("UPDATE projects SET program_name = ? WHERE id = ?")) {
                     stmt.setString(1, matchingProgram);
+                    stmt.setInt(2, newProjId);
                     stmt.executeUpdate();
                 }
                 this.activeProjectId = newProjId;

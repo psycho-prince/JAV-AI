@@ -5,6 +5,8 @@ import com.javai.storage.DatabaseManager;
 import com.javai.plugins.scoring.FindingScorer;
 import com.javai.plugins.scoring.ProgramRuleEngine;
 import com.javai.plugins.validation.ReportValidator;
+import com.javai.security.coder.WorkspaceInspector;
+import com.javai.security.coder.WorkspaceProfile;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 public class ProgramRuleEngineTest {
@@ -94,6 +97,28 @@ public class ProgramRuleEngineTest {
         List<com.javai.security.TestPlanner.PlaybookStatus> playbooksUpdated = methodologyEngine.getTestPlanner().getTargetPlaybookCoverage(targetId, memoryEngine);
         assertEquals("Completed", playbooksUpdated.get(0).getSteps().get(0).getStatus());
         assertEquals("Mapped account roles.", playbooksUpdated.get(0).getSteps().get(0).getNotes());
+    }
+
+    @Test
+    public void testSwitchProjectAutoLinksProgramProject() throws Exception {
+        boolean switched = memoryEngine.switchProject("NASA");
+
+        assertTrue(switched);
+        assertEquals("NASA", memoryEngine.getActiveProjectName());
+        assertEquals("NASA", memoryEngine.getActiveProgramName());
+        assertEquals("Government / Aerospace", memoryEngine.getProgramType("NASA"));
+    }
+
+    @Test
+    public void testCoderWorkspaceInspectionPlansMavenVerification() throws Exception {
+        WorkspaceInspector inspector = new WorkspaceInspector();
+        WorkspaceProfile profile = inspector.inspect(Path.of("."));
+
+        assertEquals("Maven", profile.getBuildSystem());
+        assertFalse(profile.getSourceFiles().isEmpty());
+        assertTrue(profile.getTestFiles().stream().anyMatch(path -> path.endsWith("ProgramRuleEngineTest.java")));
+        assertFalse(profile.getVerificationCommands().isEmpty());
+        assertEquals("mvn test", profile.getVerificationCommands().get(0).asShellString());
     }
 
     @Test

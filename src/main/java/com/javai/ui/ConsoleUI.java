@@ -810,6 +810,8 @@ public class ConsoleUI {
         System.out.println("  /quantum unseal [f] [p] [s] Decrypt and verify a sealed PQC file.");
         System.out.println("  /coder solve [desc]     Use AI model router to solve coding problems.");
         System.out.println("  /coder audit [file]     Audit code for quantum vulnerabilities and PQC readiness.");
+        System.out.println("  /coder inspect [path]   Map a workspace and detect verification commands.");
+        System.out.println("  /coder verify [path]    Run the detected allowlisted test command.");
         System.out.println("  /exit                   Close the console interface.");
     }
 
@@ -1965,8 +1967,12 @@ public class ConsoleUI {
                     return;
                 }
                 coder.auditPqcReadiness(subarg);
+            } else if (subcmd.equals("inspect")) {
+                coder.inspectWorkspace(subarg);
+            } else if (subcmd.equals("verify")) {
+                coder.verifyWorkspace(subarg);
             } else {
-                System.out.println("[System] Unknown coder subcommand. Use: `/coder solve <problem>` or `/coder audit <file>`");
+                System.out.println("[System] Unknown coder subcommand. Use: `/coder solve <problem>`, `/coder audit <file>`, `/coder inspect [path]`, or `/coder verify [path]`");
             }
         } catch (Exception e) {
             System.out.println("[Error] Coder operation failed: " + e.getMessage());
