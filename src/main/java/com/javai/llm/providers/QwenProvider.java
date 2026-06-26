@@ -93,8 +93,10 @@ public class QwenProvider implements LLMProvider {
             }
         }
 
-        // Qwen Provider simulated fallback
-        return new LLMResponse("[Simulation Qwen] Connection to " + config.getEndpoint() + " failed: " + lastException.getMessage() 
-                + ". Model fallback response to: \"" + request.getMessages().get(request.getMessages().size() - 1).getContent() + "\"");
+        String error = lastException != null ? lastException.getMessage() : "Unknown provider failure";
+        return new LLMResponse("[Simulation Qwen] Connection to " + config.getEndpoint() + " failed: " + error
+                + ". Model fallback response to: \"" + request.getMessages().get(request.getMessages().size() - 1).getContent() + "\"",
+                true,
+                error);
     }
 }

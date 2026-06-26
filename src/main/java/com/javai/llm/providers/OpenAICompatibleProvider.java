@@ -93,12 +93,13 @@ public class OpenAICompatibleProvider implements LLMProvider {
             }
         }
 
-        System.out.println("[OpenAICompatibleProvider] WARNING: Failed to reach LLM endpoint after " + maxRetries + " attempts: " + lastException.getMessage());
+        String error = lastException != null ? lastException.getMessage() : "Unknown provider failure";
+        System.out.println("[OpenAICompatibleProvider] WARNING: Failed to reach LLM endpoint after " + maxRetries + " attempts: " + error);
         System.out.println("[OpenAICompatibleProvider] Status: Falling back to local diagnostic simulation mode.");
-        return getSimulatedResponse(request);
+        return getSimulatedResponse(request, error);
     }
 
-    private LLMResponse getSimulatedResponse(LLMRequest request) {
+    private LLMResponse getSimulatedResponse(LLMRequest request, String error) {
         String lastUserPrompt = "";
         if (request.getMessages() != null && !request.getMessages().isEmpty()) {
             Message lastMsg = request.getMessages().get(request.getMessages().size() - 1);
@@ -108,11 +109,11 @@ public class OpenAICompatibleProvider implements LLMProvider {
         }
 
         if (lastUserPrompt.contains("help") || lastUserPrompt.contains("command")) {
-            return new LLMResponse("I am JavAI Research Edition v1.0. You can type query strings in this console, or run command overrides starting with a slash (/). Try `/notes` or `/status`.");
+            return new LLMResponse("I am JavAI Research Edition v1.0. You can type query strings in this console, or run command overrides starting with a slash (/). Try `/notes` or `/status`.", true, error);
         } else if (lastUserPrompt.contains("hello") || lastUserPrompt.contains("hi")) {
-            return new LLMResponse("Hello! I am your local JavAI agent. Memory and Storage layers are online. How can I assist your research today?");
+            return new LLMResponse("Hello! I am your local JavAI agent. Memory and Storage layers are online. How can I assist your research today?", true, error);
         } else {
-            return new LLMResponse("Simulation Engine received: \"" + lastUserPrompt + "\". Local SQLite storage commits and retrieves successfully. (Connect to Ollama/OpenAI server at " + config.getEndpoint() + " to replace mock response).");
+            return new LLMResponse("Simulation Engine received: \"" + lastUserPrompt + "\". Local SQLite storage commits and retrieves successfully. (Connect to Ollama/OpenAI server at " + config.getEndpoint() + " to replace mock response).", true, error);
         }
     }
 }

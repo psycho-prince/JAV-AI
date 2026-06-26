@@ -510,7 +510,12 @@ public class ConsoleUI {
                 long duration = System.currentTimeMillis() - start;
                 
                 System.out.println("\n=== Connection Test Result ===");
-                System.out.println("Status: ONLINE");
+                if (response.isFallback()) {
+                    System.out.println("Status: OFFLINE (Using simulation fallback)");
+                    System.out.println("Error: " + response.getError());
+                } else {
+                    System.out.println("Status: ONLINE");
+                }
                 System.out.println("Response Time: " + duration + " ms");
                 System.out.println("Response Snippet: " + response.getContent().substring(0, Math.min(100, response.getContent().length())) + "...");
                 System.out.println("==============================");

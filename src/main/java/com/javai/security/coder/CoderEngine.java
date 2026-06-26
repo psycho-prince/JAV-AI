@@ -44,6 +44,10 @@ public class CoderEngine {
         request.setTemperature(0.3);
 
         LLMResponse response = modelRouter.complete(request);
+        if (response.isFallback()) {
+            throw new IOException("LLM provider unavailable: " + response.getError()
+                    + ". Start/configure the model endpoint before using `/coder solve`.");
+        }
         String solution = response.getContent();
 
         System.out.println("\n\u001B[1m\u001B[32m=== CODER SOLUTION ===\u001B[0m");
