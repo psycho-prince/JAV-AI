@@ -1,5 +1,5 @@
 {
-  "name": "javai",
+  "name": "@rhyugen/javai",
   "version": "1.0.0",
   "description": "JavAI Research Edition - Adversarial Security Agent and Post-Quantum Code Architect",
   "bin": {
