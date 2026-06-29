@@ -13,3 +13,8 @@ target/
 /memory/cache/
 /memory/embeddings/
 /workspace/temp/
+
+# Local target-specific scripts and scan logs
+meesho_*
+__pycache__/
+tests/
