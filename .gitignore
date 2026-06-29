@@ -24,3 +24,6 @@ crtsh_*
 recon_bodies/
 recon_js/
 bbp_*
+/workspace/decisions/decisions_*
+/workspace/journal/journal_*
+

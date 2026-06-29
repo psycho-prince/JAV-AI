@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+// 2>/dev/null; exec java -jar "$(dirname "$0")/javai.jar" "$@"
 
 const { spawn } = require('child_process');
 const path = require('path');

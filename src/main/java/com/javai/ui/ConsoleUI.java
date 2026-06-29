@@ -13,6 +13,8 @@ import java.util.List;
 public class ConsoleUI {
     private final JavAI javAI;
     private boolean running = true;
+    private volatile boolean queryActive = false;
+    private Thread mainThread;
 
     public ConsoleUI(JavAI javAI) {
         this.javAI = javAI;
@@ -20,6 +22,26 @@ public class ConsoleUI {
 
     public void run() {
         printBanner();
+        this.mainThread = Thread.currentThread();
+
+        // Register SIGINT handler to cancel query instead of exiting the process
+        try {
+            sun.misc.Signal.handle(new sun.misc.Signal("INT"), new sun.misc.SignalHandler() {
+                @Override
+                public void handle(sun.misc.Signal sig) {
+                    if (queryActive) {
+                        System.out.println("\n\u001B[31m[System] Interrupt received. Canceling active query/operation...\u001B[0m");
+                        mainThread.interrupt();
+                    } else {
+                        // At the prompt: clear line and print a fresh prompt
+                        System.out.print("\n\u001B[32mresearcher@javai:~$\u001B[0m ");
+                        System.out.flush();
+                    }
+                }
+            });
+        } catch (Exception e) {
+            // Signal handling might fail on unsupported JVMs, ignore
+        }
         
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
             while (running) {
@@ -30,23 +52,31 @@ public class ConsoleUI {
                 
                 System.out.printf("\n\u001B[34m[Proj: %s | Model: %s | Prog: %s]\u001B[0m\n\u001B[32mresearcher@javai:~$\u001B[0m ",
                         activeProjName, activeModelName, activeProgName);
+                
+                queryActive = false;
                 String input = reader.readLine();
                 if (input == null) break;
                 
                 input = input.trim();
                 if (input.isEmpty()) continue;
 
-                if (input.startsWith("/")) {
-                    handleCommand(input);
-                } else {
-                    StringBuilder queryBuilder = new StringBuilder(input);
-                    // Read all remaining lines in the paste buffer
-                    while (reader.ready()) {
-                        String extra = reader.readLine();
-                        if (extra == null) break;
-                        queryBuilder.append("\n").append(extra);
+                queryActive = true;
+                try {
+                    if (input.startsWith("/")) {
+                        handleCommand(input);
+                    } else {
+                        StringBuilder queryBuilder = new StringBuilder(input);
+                        // Read all remaining lines in the paste buffer
+                        while (reader.ready()) {
+                            String extra = reader.readLine();
+                            if (extra == null) break;
+                            queryBuilder.append("\n").append(extra);
+                        }
+                        handleQuery(queryBuilder.toString().trim());
                     }
-                    handleQuery(queryBuilder.toString().trim());
+                } finally {
+                    Thread.interrupted(); // Clear interrupted status
+                    queryActive = false;
                 }
             }
         } catch (Exception e) {
@@ -181,7 +211,11 @@ public class ConsoleUI {
                     System.out.println("[System] Unknown command: " + cmd + ". Type `/help` for commands.");
             }
         } catch (Exception e) {
-            System.out.println("[Error] Command failed: " + e.getMessage());
+            if (Thread.currentThread().isInterrupted() || e instanceof InterruptedException || (e.getCause() != null && e.getCause() instanceof InterruptedException)) {
+                System.out.println("\n\u001B[31m[System] Command execution canceled by user.\u001B[0m");
+            } else {
+                System.out.println("[Error] Command failed: " + e.getMessage());
+            }
         }
     }
 
@@ -767,7 +801,11 @@ public class ConsoleUI {
             String reply = javAI.getAgentEngine().processQuery(query);
             System.out.println("\n[JavAI]: " + reply);
         } catch (Exception e) {
-            System.out.println("\n[Error] Failed to process prompt: " + e.getMessage());
+            if (Thread.currentThread().isInterrupted() || e instanceof InterruptedException || (e.getCause() != null && e.getCause() instanceof InterruptedException)) {
+                System.out.println("\n\u001B[31m[System] Query canceled by user.\u001B[0m");
+            } else {
+                System.out.println("\n[Error] Failed to process prompt: " + e.getMessage());
+            }
         }
     }
 
