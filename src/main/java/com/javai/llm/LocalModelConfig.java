@@ -6,7 +6,7 @@ public class LocalModelConfig {
     private String apiKey = "na";
     private double temperature = 0.7;
     private String modelName = "qwen2.5-coder:3b";
-    private int timeoutSeconds = 60;
+    private int timeoutSeconds = 300;
 
     public String getActiveModel() {
         return activeModel;
