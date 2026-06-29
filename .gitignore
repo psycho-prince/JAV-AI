@@ -18,3 +18,8 @@ target/
 meesho_*
 __pycache__/
 tests/
+certspotter_*
+crtsh_*
+*_robots.txt
+recon_bodies/
+recon_js/
