@@ -42,7 +42,7 @@ public class GeminiProvider implements LLMProvider {
 
         String model = config.getModelName();
         if (!model.contains("gemini")) {
-            model = "gemini-1.5-flash";
+            model = "gemini-2.5-flash";
         }
 
         String uriStr = "https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + apiKey;
