@@ -39,7 +39,14 @@ public class ConsoleUI {
                 if (input.startsWith("/")) {
                     handleCommand(input);
                 } else {
-                    handleQuery(input);
+                    StringBuilder queryBuilder = new StringBuilder(input);
+                    // Read all remaining lines in the paste buffer
+                    while (reader.ready()) {
+                        String extra = reader.readLine();
+                        if (extra == null) break;
+                        queryBuilder.append("\n").append(extra);
+                    }
+                    handleQuery(queryBuilder.toString().trim());
                 }
             }
         } catch (Exception e) {

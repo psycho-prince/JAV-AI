@@ -1,6 +1,6 @@
 {
   "name": "@rhyugen/javai",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "JavAI Research Edition - Adversarial Security Agent and Post-Quantum Code Architect",
   "bin": {
     "javai": "bin/cli.js"
